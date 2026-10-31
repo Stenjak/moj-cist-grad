@@ -1,0 +1,67 @@
+
+<!DOCTYPE html>
+<html lang="bs">
+<head>
+  <meta charset="UTF-8">
+  <title>Turnstile test</title>
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js"
+          async defer></script>
+</head>
+<body>
+  <h2>Moj Čist Grad – Turnstile test</h2>
+  <p>Sačekaj da se pojavi sigurnosna provjera.</p>
+
+  <div class="cf-turnstile"
+       data-sitekey="0x4AAAAAAFuXfXcUpqgCX_CU">
+  </div>
+
+  <p>
+    Nakon uspješne provjere klikni dugme ispod.
+  </p>
+
+  <button onclick="testiraj()">Testiraj zaštitu</button>
+
+  <pre id="rezultat"></pre>
+
+  <script>
+    async function testiraj() {
+      const izlaz = document.getElementById("rezultat");
+      const token = document.querySelector(
+        '[name="cf-turnstile-response"]'
+      )?.value;
+
+      if (!token) {
+        izlaz.textContent =
+          "Prvo završi Turnstile provjeru.";
+        return;
+      }
+
+      izlaz.textContent = "Provjera u toku...";
+
+      try {
+        const odgovor = await fetch(
+          "https://kkyexchfyhogqtcfvvau.supabase.co/functions/v1/submit-report",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              turnstileToken: token
+            })
+          }
+        );
+
+        const podaci = await odgovor.json();
+
+        izlaz.textContent =
+          "HTTP status: " + odgovor.status +
+          "\n" + JSON.stringify(podaci, null, 2);
+      } catch (greska) {
+        izlaz.textContent =
+          "Greška: " + greska.message;
+      }
+    }
+  </script>
+</body>
+</html>
